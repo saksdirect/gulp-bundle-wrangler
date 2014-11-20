@@ -45,6 +45,8 @@ module.exports = TaskProxy.extend("ConcatProxy", {
                     // Dump to the directory specified in the `concat` call above
                     .pipe(gulp.dest('./'));
 
+                console.log('\nhere\n');
+
             }); // end of loop
 
         }); // end of concat task

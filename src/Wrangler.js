@@ -65,12 +65,16 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
             }
 
             // Run tasks
-            exec('gulp ' + this.argv._.join(' '), function (error, stdout, stderr) {
-                console.log('stdout: ' + stdout);
-                console.log('stderr: ' + stderr);
-                if (error !== null) {
-                    console.log('exec error: ' + error);
-                }
+            //exec('gulp ' + this.argv._.join(' '), function (error, stdout, stderr) {
+            //    console.log('stdout: ' + stdout);
+            //    console.log('stderr: ' + stderr);
+            //    if (error !== null) {
+            //        console.log('exec error: ' + error);
+            //    }
+            //});
+
+            this.argv._.forEach(function (item) {
+                console.log(gulp);
             });
 
             //log(gulp.__proto__, true);
@@ -150,7 +154,10 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
 
         createTasksForBundle: function (gulp, bundle) {
             var self = this;
-            log(bundle, true);
+
+            if (sjl.empty(bundle)) {
+                return;
+            }
 
             // Register bundle with task so that user can call "gulp task-name:bundle-name"
             Object.keys(self.tasks).forEach(function (task) {
@@ -159,6 +166,12 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
                 }
                 self.tasks[task].instance.registerBundle(bundle, gulp, self);
             });
+
+            if (bundle.hasFilesJs() || bundle.hasFilesCss() || bundle.hasFilesHtml()) {
+                self.tasks.concat.instance.registerBundle(bundle, gulp, self);
+                //self.tasks.minify.instance.registerBundle(bundle, gulp, self);
+            }
+
         },
 
         getDirSafe: function (dir) {
@@ -175,7 +188,7 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
         },
 
         getBundleConfigByName: function (name) {
-            var filePath = name.indexOf(path.sep) > -1 || name.indexOf('/') > -1 ? name : process.sepapath.join(this.bundlesPath, name + '.' + this.bundleConfigFormat),
+            var filePath = name.indexOf(path.sep) > -1 || name.indexOf('/') > -1 ? name : path.join(this.bundlesPath, name + '.' + this.bundleConfigFormat),
                 retVal = {},
                 file;
             if (!fs.existsSync(filePath)) {
