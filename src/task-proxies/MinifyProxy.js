@@ -4,7 +4,11 @@
 require('sjljs');
 
 // Import base task proxy to extend
-var TaskProxy = require('../TaskProxy');
+var TaskProxy = require('../TaskProxy'),
+    path = require('path'),
+    uglify = require('gulp-uglify'),
+    header = require('gulp-header'),
+    crypto = require('crypto');
 
 module.exports = TaskProxy.extend("MinifyProxy", {
 
@@ -20,32 +24,28 @@ module.exports = TaskProxy.extend("MinifyProxy", {
         var separator = wrangler.getTaskStrSeparator();
 
         // Create task for bundle
-        gulp.task('minify' + separator + bundle.name, function () {
+        gulp.task('minify' + separator + bundle.options.name, function () {
 
-            // Check for sections on bundle that can be uglifyenated
-            ['js', 'css'].forEach(function (ext) {
-                var section = bundle[ext];
+            // Check for sections on bundle that can be minified
+            var ext = 'js',
+                concatFile = path.join(wrangler.cwd, wrangler.tasks.concat[ext + 'BuildPath'], bundle.options.name + '.' + ext);
 
-                // If section is empty or not an array exit the function
-                if (sjl.empty(section) || !Array.isArray(section)) {
-                    return;
-                }
+            // Give gulp the list of sources to process
+            gulp.src(concatFile)
 
-                // Give gulp the list of sources to process
-                gulp.src(wrangler.getDirSafe('artifacts.' + ext) + bundle.name + '.' + ext)
+                // Minify current source in the {artifacts}/ext directory
+                .pipe(uglify())
 
-                    // Uglify artifact file for current bundle (artifact file is at wrangler.dirs.artifacts[extension] directory)
-                    .pipe(uglify())
+                // Add file header
+                .pipe(header(wrangler.tasks.minify.header, {bundle: bundle, fileExt: ext, fileHash: "{{hash goes here}}"}))
 
-                    // Add file header
-                    .pipe(header('/**! <%= bundle.name %>.<%= ext %> <%= bundle.version %> <%= (new Date()) %> **/'))
+                // Dump to the directory specified in the `uglify` call above
+                .pipe(gulp.dest(path.join(wrangler.cwd, wrangler.tasks.minify[ext + 'BuildPath'])));
 
-                    // Dump to the directory build folder in the wrangler config for this `ext` type
-                    .pipe(gulp.dest('./' + wrangler.getDirSafe('build.' + ext) + bundle.name + '.' + ext));
-
-            }); // end of loop
+            // Minify css files
 
         }); // end of uglify task
 
     } // end of `registerBundle`
-});
+
+}); // end of export

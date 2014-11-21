@@ -23,6 +23,8 @@ module.exports = TaskProxy.extend("ConcatProxy", {
         // Task string separator
         var separator = wrangler.getTaskStrSeparator();
 
+        bundle.hasFiles();
+
         // Create task for bundle
         gulp.task('concat' + separator + bundle.options.name, function () {
 

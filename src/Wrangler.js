@@ -7,7 +7,6 @@ var fs = require('fs'),
     path = require('path'),
     yaml = require('js-yaml'),
     Bundle = require("./../src/Bundle.js"),
-    exec = require('child_process').exec,
     log = function () {
         var args = sjl.argsToArray(arguments),
             verbose = sjl.extractBoolFromArrayEnd(args);
@@ -26,7 +25,7 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
             taskProxyMap = yaml.safeLoad(fs.readFileSync(
                 path.join(__dirname, "/../configs/default.task.proxy.map.yaml")));
 
-        log(argv, true);
+        log(argv, argv.verbose);
 
         sjl.extend(true, this, {
             bundles: {},
@@ -64,23 +63,14 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
                 this.createBundles(gulp, this.extractBundlePathsFromArgv(this.argv));
             }
 
-            // Run tasks
-            //exec('gulp ' + this.argv._.join(' '), function (error, stdout, stderr) {
-            //    console.log('stdout: ' + stdout);
-            //    console.log('stderr: ' + stderr);
-            //    if (error !== null) {
-            //        console.log('exec error: ' + error);
-            //    }
-            //});
+            // Run all tasks passed in via cli
+            if (this.argv._.length > 0) {
+                this.argv._.forEach(function (item) {
+                    gulp.start(item);
+                });
+            }
 
-            this.argv._.forEach(function (item) {
-                console.log(item);
-                gulp.start(item);
-            });
-
-            //log(gulp, gulp.start, true);
-
-            return gulp;
+            // Else run all tasks in all bundles
         },
 
         createTaskProxies: function (gulp) {
@@ -109,13 +99,11 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
             // Creating task proxies message
             log("- Creating bundles.", this.argv.verbose);
             var self = this,
-                bundlesPath = this.bundlesPath,
-                usingFsFileStrings = false;
+                bundlesPath = this.bundlesPath;
 
             // Get bundles
             if (!bundles) {
                 bundles = (fs.readdirSync(bundlesPath));
-                usingFsFileStrings = true;
             }
 
             // Parse bundle configs
@@ -126,12 +114,10 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
         },
 
         createBundle: function (config) {
-
             if (sjl.classOfIs(config, 'String')) {
                 config = this.getBundleConfigByName(config);
             }
 
-            //
             if (sjl.empty(config)) {
                 return; // @todo throw exception here
             }
@@ -140,11 +126,6 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
             log('Creating bundle "' + config.name + '"', this.argv.verbose);
 
             var bundle = new Bundle(config);
-
-            log(bundle, true);
-
-            // Created message
-            log('"' + bundle.options.name + '" created successfully.', this.argv.verbose);
 
             // Store bundle
             this.bundles[bundle.options.name] = bundle;
@@ -168,9 +149,10 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
                 self.tasks[task].instance.registerBundle(bundle, gulp, self);
             });
 
+            // Composite tasks @todo should be moved
             if (bundle.hasFilesJs() || bundle.hasFilesCss() || bundle.hasFilesHtml()) {
                 self.tasks.concat.instance.registerBundle(bundle, gulp, self);
-                //self.tasks.minify.instance.registerBundle(bundle, gulp, self);
+                self.tasks.minify.instance.registerBundle(bundle, gulp, self);
             }
 
         },
@@ -237,7 +219,5 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
 
             return out;
         }
-
-
 
     });
