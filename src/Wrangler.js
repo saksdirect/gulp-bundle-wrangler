@@ -74,10 +74,11 @@ module.exports = sjl.Extendable.extend(function Wrangler(gulp, argv, env, config
             //});
 
             this.argv._.forEach(function (item) {
-                console.log(gulp);
+                console.log(item);
+                gulp.start(item);
             });
 
-            //log(gulp.__proto__, true);
+            //log(gulp, gulp.start, true);
 
             return gulp;
         },

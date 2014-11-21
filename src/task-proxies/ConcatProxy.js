@@ -5,8 +5,10 @@ require('sjljs');
 
 // Import base task proxy to extend
 var TaskProxy = require('../TaskProxy'),
-    fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    concat = require('gulp-concat'),
+    header = require('gulp-header'),
+    crypto = require('crypto');
 
 module.exports = TaskProxy.extend("ConcatProxy", {
 
@@ -37,15 +39,13 @@ module.exports = TaskProxy.extend("ConcatProxy", {
                 gulp.src(section)
 
                     // Concatenate current source in the {artifacts}/ext directory
-                    .pipe(concat(path.join(wrangler.cwd, wrangler.concat[ext + 'BuildPath'], bundle.options.name + '.' + ext)))
+                    .pipe(concat(path.join(wrangler.cwd, wrangler.tasks.concat[ext + 'BuildPath'], bundle.options.name + '.' + ext)))
 
                     // Add file header
-                    .pipe(header('/**! <%= bundle.options.name %>.<%= ext %> <%= bundle.options.version %> <%= (new Date()) %> **/'))
+                    .pipe(header(wrangler.tasks.concat.header, {bundle: bundle, fileExt: ext, fileHash: "{{hash goes here}}"}))
 
                     // Dump to the directory specified in the `concat` call above
                     .pipe(gulp.dest('./'));
-
-                console.log('\nhere\n');
 
             }); // end of loop
 
