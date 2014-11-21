@@ -7,6 +7,7 @@ var fs = require('fs'),
     path = require('path'),
     yaml = require('js-yaml'),
     Bundle = require("./../src/Bundle.js"),
+
     log = function () {
         var args = sjl.argsToArray(arguments),
             verbose = sjl.extractBoolFromArrayEnd(args);

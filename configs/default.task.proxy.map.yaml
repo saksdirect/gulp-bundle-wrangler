@@ -18,9 +18,7 @@ compass:
 
 concat:
   constructorLocation: ./task-proxies/ConcatProxy
-  dependencies:
-    - gulp-concat
-    - gulp-uglify
+  dependencies: gulp-concat
   helpInfo: ""
 
 csslint:
@@ -45,6 +43,9 @@ htmllint:
 
 minify:
   constructorLocation: ./task-proxies/MinifyProxy
+  dependencies:
+    - gulp-minify-css
+    - gulp-uglify
   helpInfo: ""
 
 requirejs:

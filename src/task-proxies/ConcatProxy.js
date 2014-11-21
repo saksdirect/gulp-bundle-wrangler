@@ -8,6 +8,7 @@ var TaskProxy = require('../TaskProxy'),
     path = require('path'),
     concat = require('gulp-concat'),
     header = require('gulp-header'),
+    gulpif = require('gulp-if'),
     crypto = require('crypto');
 
 module.exports = TaskProxy.extend("ConcatProxy", {
@@ -44,7 +45,7 @@ module.exports = TaskProxy.extend("ConcatProxy", {
                     .pipe(concat(path.join(wrangler.cwd, wrangler.tasks.concat[ext + 'BuildPath'], bundle.options.name + '.' + ext)))
 
                     // Add file header
-                    .pipe(header(wrangler.tasks.concat.header, {bundle: bundle, fileExt: ext, fileHash: "{{hash goes here}}"}))
+                    .pipe(gulpif(ext !== 'html', header(wrangler.tasks.concat.header, {bundle: bundle, fileExt: ext, fileHash: "{{hash goes here}}"})))
 
                     // Dump to the directory specified in the `concat` call above
                     .pipe(gulp.dest('./'));
